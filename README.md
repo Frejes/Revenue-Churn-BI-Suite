@@ -332,6 +332,7 @@ SELECT cron.schedule('bi-daily-refresh', '0 3 * * *',
 ```
 
 ---
+## Live Demo - https://revenue-churn-bi-suite.vercel.app/
 
 ## How to Run
 
