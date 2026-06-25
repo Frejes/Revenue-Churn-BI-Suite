@@ -1,0 +1,5 @@
+venv/
+.env
+dashboard/js/config.js
+__pycache__/
+*.pyc

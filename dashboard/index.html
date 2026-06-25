@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue & Churn BI Suite</title>
+<style>
+:root{
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f7f7f5;
+  --color-background-tertiary:#ececec;
+  --color-background-success:#EAF3DE;
+  --color-background-warning:#FAEEDA;
+  --color-text-primary:#1a1a1a;
+  --color-text-secondary:#6b6b6b;
+  --color-text-tertiary:#9a9a9a;
+  --color-text-success:#3B6D11;
+  --color-text-warning:#854F0B;
+  --color-text-danger:#A32D2D;
+  --color-border-tertiary:#e5e5e3;
+  --color-border-secondary:#d8d8d5;
+  --border-radius-md:8px;
+  --border-radius-lg:12px;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'SF Mono',Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.suite{width:100%;max-width:1400px;margin:0 auto;padding:0 0 2rem}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo{font-size:13px;font-weight:600;color:var(--color-text-primary);letter-spacing:.02em}
+.badge-secure{font-size:11px;background:var(--color-background-success);color:var(--color-text-success);padding:3px 8px;border-radius:4px}
+.conn-badge{font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500}
+.conn-loading{background:var(--color-background-tertiary);color:var(--color-text-secondary)}
+.conn-ok{background:var(--color-background-success);color:var(--color-text-success)}
+.conn-error{background:#FCEBEB;color:var(--color-text-danger)}
+.error-banner{margin:0 1.25rem 0;padding:.75rem 1rem;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-danger);display:none}
+.error-banner.visible{display:block}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.role-badge{font-size:11px;padding:3px 10px;border-radius:4px;font-weight:500;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary)}
+.role-badge.active{background:var(--color-text-primary);color:#fff}
+.nav{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);padding:0 1.25rem;overflow-x:auto}
+.nav-btn{font-size:13px;padding:.6rem 1rem;border:none;background:none;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap}
+.nav-btn.active{color:var(--color-text-primary);font-weight:600;border-bottom-color:var(--color-text-primary)}
+.page{display:none;padding:1.25rem}
+.page.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.25rem}
+.kpi{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.875rem 1rem}
+.kpi-label{font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.kpi-val{font-size:22px;font-weight:600;color:var(--color-text-primary);line-height:1.1}
+.kpi-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:3px}
+.kpi-delta{font-size:12px;margin-top:4px}
+.delta-up{color:var(--color-text-success)}
+.delta-dn{color:var(--color-text-danger)}
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:1.25rem}
+.chart-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
+.card-title{font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.875rem}
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem;align-items:center}
+.filter-bar label{font-size:12px;color:var(--color-text-secondary)}
+.filter-bar select{font-size:12px;padding:4px 8px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.heatmap{display:grid;gap:3px;margin-top:4px}
+.hm-row{display:flex;gap:3px;align-items:center}
+.hm-label{font-size:10px;color:var(--color-text-secondary);width:56px;text-align:right;padding-right:6px;flex-shrink:0}
+.hm-cell{width:28px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
+.hm-header{display:flex;gap:3px;margin-left:62px;margin-bottom:3px}
+.hm-hdr{width:28px;font-size:9px;color:var(--color-text-tertiary);text-align:center}
+.risk-table{width:100%;border-collapse:collapse;font-size:12px}
+.risk-table th{text-align:left;font-size:11px;font-weight:600;color:var(--color-text-secondary);padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.risk-table td{padding:7px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.risk-table tr:last-child td{border-bottom:none}
+.tier-high{background:#FCEBEB;color:#A32D2D;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600}
+.tier-med{background:#FAEEDA;color:#854F0B;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600}
+.tier-low{background:#EAF3DE;color:#3B6D11;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600}
+.risk-bar-wrap{width:80px;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.risk-bar{height:100%;border-radius:3px}
+.alert-card{border-radius:var(--border-radius-md);padding:.875rem 1rem;margin-bottom:10px;border-left:3px solid}
+.alert-critical{background:#FCEBEB;border-color:#E24B4A}
+.alert-warning{background:#FAEEDA;border-color:#EF9F27}
+.alert-ok{background:#EAF3DE;border-color:#639922}
+.alert-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.alert-sub{font-size:11px;color:var(--color-text-secondary)}
+.thresh-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px}
+.thresh-row label{width:140px;color:var(--color-text-secondary)}
+.thresh-row input[type=range]{flex:1}
+.thresh-val{font-weight:600;min-width:44px;text-align:right}
+.section-label{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:1rem 0 .5rem}
+.donut-legend{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary)}
+.legend-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.security-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:4px;margin:2px}
+.sec-ok{background:var(--color-background-success);color:var(--color-text-success)}
+.rbac-table{width:100%;border-collapse:collapse;font-size:12px}
+.rbac-table th{text-align:left;font-size:11px;color:var(--color-text-secondary);padding:5px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rbac-table td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rbac-table tr:last-child td{border-bottom:none}
+.check{color:var(--color-text-success)} .cross{color:var(--color-text-danger)}
+.audit-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.audit-row:last-child{border-bottom:none}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot-ok{background:#639922} .dot-warn{background:#EF9F27} .dot-fail{background:#E24B4A}
+code{background:var(--color-background-secondary);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:11px}
+.conn-badge{font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500}
+.conn-loading{background:var(--color-background-warning);color:var(--color-text-warning)}
+.conn-ok{background:var(--color-background-success);color:var(--color-text-success)}
+.conn-error{background:#FCEBEB;color:var(--color-text-danger)}
+.data-error{display:none;margin:0 1.25rem 1rem;padding:.75rem 1rem;border-radius:var(--border-radius-md);background:#FCEBEB;color:var(--color-text-danger);font-size:12px;border:0.5px solid #E24B4A}
+.setup-panel{margin:0 1.25rem 1rem;padding:1rem 1.25rem;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary)}
+.setup-panel h3{font-size:14px;margin-bottom:.5rem}
+.setup-panel p{font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem;line-height:1.5}
+.setup-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.setup-row input{flex:1;min-width:220px;font-size:12px;padding:8px 10px;border-radius:4px;border:0.5px solid var(--color-border-secondary)}
+.setup-row button{font-size:12px;padding:8px 14px;border-radius:4px;border:none;background:var(--color-text-primary);color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="suite">
+<h2 class="sr-only">Executive Revenue & Churn BI Suite</h2>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo">📊 Revenue & Churn BI Suite</span>
+    <span class="badge-secure">🔒 Secure Workspace</span>
+  </div>
+  <div class="topbar-right">
+    <span class="conn-badge conn-loading" id="conn-status">Connecting…</span>
+    <span style="font-size:11px;color:var(--color-text-secondary)">Role:</span>
+    <span class="role-badge active" onclick="setRole('Admin')" id="r-Admin">Admin</span>
+    <span class="role-badge" onclick="setRole('Analyst')" id="r-Analyst">Analyst (EMEA)</span>
+    <span class="role-badge" onclick="setRole('Viewer')" id="r-Viewer">Viewer</span>
+  </div>
+</div>
+
+<div class="error-banner" id="error-banner"></div>
+
+<div class="setup-panel" id="setup-panel" style="display:none">
+  <h3>Connect to Supabase</h3>
+  <p>Paste your <strong>Publishable key</strong> from Supabase → Settings → API Keys (starts with <code>sb_publishable_</code>).</p>
+  <div class="setup-row">
+    <input type="password" id="setup-anon-key" placeholder="sb_publishable_..." autocomplete="off">
+    <button type="button" id="setup-save-btn">Connect</button>
+  </div>
+</div>
+
+<div class="data-error" id="data-error"></div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('overview',this)">Overview</button>
+  <button class="nav-btn" onclick="showPage('drilldown',this)">Drilldowns</button>
+  <button class="nav-btn" onclick="showPage('risk',this)">Accounts at Risk</button>
+  <button class="nav-btn" onclick="showPage('alerts',this)">Alerts & Monitoring</button>
+  <button class="nav-btn" onclick="showPage('security',this)">Security</button>
+</div>
+
+<div class="page active" id="page-overview">
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">MRR (Dec 2024)</div><div class="kpi-val" id="kpi-mrr">$1.83M</div><div class="kpi-delta delta-dn">↓ −6.3% vs Nov</div></div>
+    <div class="kpi"><div class="kpi-label">ARR</div><div class="kpi-val">$22.0M</div><div class="kpi-sub">Annualized run rate</div></div>
+    <div class="kpi"><div class="kpi-label">Active Customers</div><div class="kpi-val">402</div><div class="kpi-delta delta-dn">↓ −4.5% vs Nov</div></div>
+    <div class="kpi"><div class="kpi-label">Churn Rate</div><div class="kpi-val">5.2%</div><div class="kpi-sub">Dec 2024 monthly</div></div>
+    <div class="kpi"><div class="kpi-label">Retention Rate</div><div class="kpi-val">94.8%</div><div class="kpi-delta delta-up">↑ +0.3pp vs Nov</div></div>
+    <div class="kpi"><div class="kpi-label">ARPU</div><div class="kpi-val">$4,563</div><div class="kpi-sub">Per active customer</div></div>
+    <div class="kpi"><div class="kpi-label">LTV Proxy</div><div class="kpi-val">$87.6K</div><div class="kpi-sub">ARPU ÷ monthly churn</div></div>
+    <div class="kpi"><div class="kpi-label">High-Risk Accounts</div><div class="kpi-val" style="color:#A32D2D">15</div><div class="kpi-sub">Risk score ≥ 70</div></div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">MRR trend — Jan 2023 to Dec 2024</div>
+      <div style="position:relative;height:200px"><canvas id="mrrChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue by plan</div>
+      <div style="position:relative;height:160px;margin-bottom:8px"><canvas id="planChart"></canvas></div>
+      <div class="donut-legend">
+        <div class="legend-row"><span class="legend-swatch" style="background:#3C3489"></span>Enterprise Plus — 49%</div>
+        <div class="legend-row"><span class="legend-swatch" style="background:#534AB7"></span>Enterprise — 41%</div>
+        <div class="legend-row"><span class="legend-swatch" style="background:#7F77DD"></span>Growth — 8%</div>
+        <div class="legend-row"><span class="legend-swatch" style="background:#AFA9EC"></span>Starter — 2%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">Monthly churn rate</div>
+      <div style="position:relative;height:180px"><canvas id="churnChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue by region</div>
+      <div style="position:relative;height:180px"><canvas id="regionChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cohort retention heatmap (% retained by month since acquisition)</div>
+    <div id="heatmap-container" style="overflow-x:auto"></div>
+  </div>
+</div>
+
+<div class="page" id="page-drilldown">
+  <div class="filter-bar">
+    <label>Region</label>
+    <select id="f-region" onchange="updateDrilldown()">
+      <option>All</option><option>North America</option><option>EMEA</option><option>APAC</option><option>LATAM</option>
+    </select>
+    <label>Plan</label>
+    <select id="f-plan" onchange="updateDrilldown()">
+      <option>All</option><option>Starter</option><option>Growth</option><option>Enterprise</option><option>Enterprise Plus</option>
+    </select>
+    <label>Segment</label>
+    <select id="f-segment" onchange="updateDrilldown()">
+      <option>All</option><option>SMB</option><option>Mid-Market</option><option>Enterprise</option>
+    </select>
+    <label>Channel</label>
+    <select id="f-channel" onchange="updateDrilldown()">
+      <option>All</option><option>Direct Sales</option><option>Partner</option><option>Self-Serve</option><option>Marketplace</option>
+    </select>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi"><div class="kpi-label">Filtered MRR</div><div class="kpi-val" id="d-mrr">$35.97M</div></div>
+    <div class="kpi"><div class="kpi-label">Customers</div><div class="kpi-val" id="d-cust">800</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Churn Rate</div><div class="kpi-val" id="d-churn">5.2%</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Usage Score</div><div class="kpi-val" id="d-usage">0.55</div></div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">MRR by region & segment</div>
+      <div style="position:relative;height:220px"><canvas id="drillRevChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Churn by region</div>
+      <div style="position:relative;height:220px"><canvas id="drillChurnChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Top revenue impact — by plan & channel</div>
+    <table class="risk-table">
+      <thead><tr><th>Plan</th><th>Channel</th><th>Total MRR</th><th>Customers</th><th>Churn rate</th><th>ARPU</th><th>Avg usage</th></tr></thead>
+      <tbody id="impact-table">
+        <tr><td>Enterprise Plus</td><td>Direct Sales</td><td>$8.9M</td><td>32</td><td>1.1%</td><td>$16,842</td><td>0.57</td></tr>
+        <tr><td>Enterprise Plus</td><td>Partner</td><td>$4.2M</td><td>19</td><td>1.8%</td><td>$14,310</td><td>0.54</td></tr>
+        <tr><td>Enterprise</td><td>Direct Sales</td><td>$7.1M</td><td>72</td><td>2.4%</td><td>$6,204</td><td>0.56</td></tr>
+        <tr><td>Enterprise</td><td>Partner</td><td>$3.4M</td><td>51</td><td>2.1%</td><td>$4,492</td><td>0.53</td></tr>
+        <tr><td>Growth</td><td>Self-Serve</td><td>$1.2M</td><td>68</td><td>5.3%</td><td>$1,763</td><td>0.55</td></tr>
+        <tr><td>Growth</td><td>Direct Sales</td><td>$1.4M</td><td>62</td><td>4.1%</td><td>$2,258</td><td>0.57</td></tr>
+        <tr><td>Starter</td><td>Self-Serve</td><td>$0.5M</td><td>142</td><td>7.2%</td><td>$492</td><td>0.53</td></tr>
+        <tr><td>Starter</td><td>Marketplace</td><td>$0.3M</td><td>78</td><td>8.1%</td><td>$385</td><td>0.51</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="page" id="page-risk">
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi" style="border-left:3px solid #E24B4A"><div class="kpi-label">High risk accounts</div><div class="kpi-val" style="color:#A32D2D">15</div><div class="kpi-sub">Risk score ≥ 70</div></div>
+    <div class="kpi" style="border-left:3px solid #EF9F27"><div class="kpi-label">Medium risk accounts</div><div class="kpi-val" style="color:#854F0B">118</div><div class="kpi-sub">Risk score 40–69</div></div>
+    <div class="kpi" style="border-left:3px solid #639922"><div class="kpi-label">Low risk accounts</div><div class="kpi-val" style="color:#3B6D11">269</div><div class="kpi-sub">Risk score &lt; 40</div></div>
+  </div>
+
+  <div class="chart-row-3" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-title">Risk driver breakdown</div>
+      <div style="position:relative;height:160px"><canvas id="driverChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Risk by segment</div>
+      <div style="position:relative;height:110px"><canvas id="riskSegChart"></canvas></div>
+      <div class="donut-legend">
+        <div class="legend-row"><span class="legend-swatch" style="background:#E24B4A"></span>SMB — 58%</div>
+        <div class="legend-row"><span class="legend-swatch" style="background:#EF9F27"></span>Mid-Market — 29%</div>
+        <div class="legend-row"><span class="legend-swatch" style="background:#639922"></span>Enterprise — 13%</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">High risk by region</div>
+      <div style="position:relative;height:160px"><canvas id="riskRegChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Top 15 accounts at risk — anonymized IDs (no PII)</div>
+    <table class="risk-table">
+      <thead><tr><th>Anon ID</th><th>Region</th><th>Plan</th><th>Risk score</th><th>Risk tier</th><th>Failed pmts</th><th>Support tkts</th><th>Usage score</th><th>MRR</th></tr></thead>
+      <tbody id="risk-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="page" id="page-alerts">
+  <div class="section-label">Configure thresholds</div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="thresh-row">
+      <label>Churn spike threshold</label>
+      <input type="range" min="2" max="15" step="0.5" value="8" id="t-churn" oninput="document.getElementById('tv-churn').textContent=this.value+'%';evalAlerts()">
+      <span class="thresh-val" id="tv-churn">8%</span>
+    </div>
+    <div class="thresh-row">
+      <label>Revenue drop threshold</label>
+      <input type="range" min="1" max="20" step="0.5" value="5" id="t-rev" oninput="document.getElementById('tv-rev').textContent='-'+this.value+'%';evalAlerts()">
+      <span class="thresh-val" id="tv-rev">-5%</span>
+    </div>
+    <div class="thresh-row">
+      <label>Avg risk score alert</label>
+      <input type="range" min="20" max="80" step="1" value="50" id="t-risk" oninput="document.getElementById('tv-risk').textContent=this.value;evalAlerts()">
+      <span class="thresh-val" id="tv-risk">50</span>
+    </div>
+  </div>
+
+  <div class="section-label">Active alerts</div>
+  <div id="alert-list"></div>
+
+  <div class="section-label" style="margin-top:1.25rem">Refresh audit log</div>
+  <div class="card" id="audit-log-card">
+    <div style="font-size:12px;color:var(--color-text-secondary)">Loading audit log…</div>
+    <div style="margin-top:10px;font-size:11px;color:var(--color-text-tertiary)">ℹ Logs retained 90 days · Schedule: 03:00 UTC daily via pg_cron</div>
+  </div>
+</div>
+
+<div class="page" id="page-security">
+  <div class="chart-row" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <div class="card-title">Security controls status</div>
+      <div style="margin-bottom:8px">
+        <span class="security-badge sec-ok">✓ No PII stored</span>
+        <span class="security-badge sec-ok">✓ RBAC enforced</span>
+        <span class="security-badge sec-ok">✓ Row-level security</span>
+        <span class="security-badge sec-ok">✓ TLS required</span>
+        <span class="security-badge sec-ok">✓ No hardcoded creds</span>
+        <span class="security-badge sec-ok">✓ Least privilege</span>
+        <span class="security-badge sec-ok">✓ Audit trail active</span>
+        <span class="security-badge sec-ok">✓ Private workspace</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">RBAC — who sees what</div>
+      <table class="rbac-table">
+        <thead><tr><th>Permission</th><th>Admin</th><th>Analyst</th><th>Viewer</th></tr></thead>
+        <tbody>
+          <tr><td>All regions</td><td class="check">✓</td><td class="cross">✗ (RLS)</td><td class="check">✓ (agg)</td></tr>
+          <tr><td>Customer-level rows</td><td class="check">✓</td><td class="check">✓ (region)</td><td class="cross">✗</td></tr>
+          <tr><td>Accounts at risk</td><td class="check">✓</td><td class="check">✓ (region)</td><td class="cross">✗</td></tr>
+          <tr><td>Alert thresholds</td><td class="check">✓ edit</td><td class="check">✓ view</td><td class="check">✓ view</td></tr>
+          <tr><td>Raw fact table</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+          <tr><td>Audit logs</td><td class="check">✓ edit</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+          <tr><td>DDL / schema</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-row" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <div class="card-title">Row-level security — analyst region partitions</div>
+      <table class="rbac-table">
+        <thead><tr><th>DB user</th><th>Assigned region</th><th>Can see other regions?</th></tr></thead>
+        <tbody>
+          <tr><td><code>bi_analyst_na</code></td><td>North America</td><td class="cross">No — blocked by RLS</td></tr>
+          <tr><td><code>bi_analyst_emea</code></td><td>EMEA</td><td class="cross">No — blocked by RLS</td></tr>
+          <tr><td><code>bi_admin_user</code></td><td>All</td><td class="check">Yes — admin bypass</td></tr>
+          <tr><td><code>bi_viewer_user</code></td><td>All (aggregate)</td><td class="check">Yes — no row-level access</td></tr>
+          <tr><td><code>bi_pbi_connector</code></td><td>mart views only</td><td class="check">Inherits caller RLS</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Credential & connection security</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+        <p>🔐 All DB passwords via <strong>env vars</strong> only — never in code</p>
+        <p>🔐 Power BI connects as <code>bi_pbi_connector</code> (read-only, mart views)</p>
+        <p>🔐 TLS enforced: <code>sslmode=require</code> in all connection strings</p>
+        <p>🔐 Passwords rotated annually; <code>VALID UNTIL</code> set on connector user</p>
+        <p>🔐 Dashboard published to <em>private workspace</em> — no public links</p>
+        <p>🔐 Customer IDs are SHA-256 hash prefixes — zero PII in DB</p>
+        <p>🔐 pgaudit extension logs all reads: <code>pgaudit.log = read,write</code></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:0">
+    <div class="card-title">Live role preview — current role: <span id="current-role-label">Admin</span></div>
+    <div id="role-preview" style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+      You are viewing as <strong>Admin</strong>. You have full read access across all regions, segments, and customer rows. You can view audit logs and manage alert thresholds.
+    </div>
+  </div>
+</div>
+</div>
+
+<script defer src="vendor/supabase.js"></script>
+<script defer src="vendor/chart.umd.js"></script>
+<script defer src="js/config.js"></script>
+<script defer src="js/supabase-data.js"></script>
+<script defer src="js/app.js"></script>
+</body>
+</html>
