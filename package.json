@@ -1,8 +1,12 @@
 {
+  "scripts": {
+    "prebuild": "node scripts/sync_dashboard_config.cjs"
+  },
   "dependencies": {
     "@supabase/server": "^1.1.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
-    "chart.js": "^4.4.1"
+    "chart.js": "^4.4.1",
+    "dotenv": "^16.4.0"
   }
 }
